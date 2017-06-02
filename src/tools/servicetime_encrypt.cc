@@ -1,11 +1,11 @@
 #include <openssl/bn.h>
 #include <string.h>
 
-#include "../user.h"
-#include "../ccn.h"
-#include "../kms.h"
+#include "../lib/user.h"
+#include "../lib/ccn.h"
+#include "../lib/kms.h"
 
-#include "../utils.h"
+#include "../lib/utils.h"
 
 int main(int argc, char *argv[])
 {

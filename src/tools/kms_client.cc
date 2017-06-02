@@ -10,7 +10,7 @@
 
 #include <openssl/bn.h>
 
-#include "utils.h"
+#include "../lib/utils.h"
 
 int main(void)
 {

@@ -14,8 +14,8 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "kms.h"
-#include "utils.h"
+#include "../lib/kms.h"
+#include "../lib/utils.h"
 
 #define HOST "192.168.1.1"
 #define PORT_NUMBER 8992
