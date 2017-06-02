@@ -143,7 +143,7 @@ std::pair <unsigned char*, unsigned int> encodeIntoBase64(const unsigned char * 
 }
 
 size_t calcDecodeLength(const unsigned char* b64input) { //Calculates the length of a decoded string
-	size_t len = strlen(b64input),
+	size_t len = strlen((char *) b64input),
 		padding = 0;
 
 	if (b64input[len-1] == '=' && b64input[len-2] == '=') //last two chars are =
@@ -259,11 +259,11 @@ unsigned char * EncryptAndSplitContent(const unsigned char * message, const unsi
     for(unsigned int j=0; j<p.size(); j++)
     {
         
-	    example1 = EncryptUserContent(p[j].first, p[j].second);
+	    example1 = (unsigned char *) EncryptUserContent(p[j].first, p[j].second);
 
-        rebuild_vector.push_back(std::make_pair(example1, strlen(example1)));
-        rebuild_size += strlen(example1);
-        printf("%d rebuild_size %d %s %d\n", rebuild_size, p[j].second, p[j].first, strlen(example1));
+        rebuild_vector.push_back(std::make_pair(example1, strlen((char *) example1)));
+        rebuild_size += strlen((char *) example1);
+        //printf("%d rebuild_size %d %s %d\n", rebuild_size, p[j].second, p[j].first, strlen(example1));
     }
 
 
@@ -277,10 +277,10 @@ unsigned char * EncryptAndSplitContent(const unsigned char * message, const unsi
 unsigned char * EncryptAndSplitContent_v2(const unsigned char * original_message, const unsigned int original_message_len, const unsigned int max_block_size, unsigned int * output_size)
 {
     std::pair<unsigned char *, unsigned int> hashed_component = encodeIntoBase64(original_message, original_message_len);
-    const char * message = hashed_component.first;
+    const char * message = (char *) hashed_component.first;
     const unsigned int message_len = hashed_component.second;
 
-    printf("Message in base64 to be send (%d): %s\n", message_len, message);
+    //printf("Message in base64 to be send (%d): %s\n", message_len, message);
 
     unsigned int number_blocks = 0;
     if(message_len % max_block_size == 0)
@@ -288,7 +288,7 @@ unsigned char * EncryptAndSplitContent_v2(const unsigned char * original_message
     else
         number_blocks = (message_len / max_block_size) + 1;
 
-    unsigned char * encrypted_message = calloc(sizeof(unsigned char), (number_blocks * 2) * (SECURITY_KEYSIZE/4 + 1 + 2) + 1 + 1); // the 2 corresponds to the character to split
+    unsigned char * encrypted_message = (unsigned char *) calloc(sizeof(unsigned char), (number_blocks * 2) * (SECURITY_KEYSIZE/4 + 1 + 2) + 1 + 1); // the 2 corresponds to the character to split
     encrypted_message[0] = '\0';
     unsigned int encr_message_len = 0;
 
@@ -298,19 +298,19 @@ unsigned char * EncryptAndSplitContent_v2(const unsigned char * original_message
     {
         if(i % max_block_size == 0 || i == message_len)
         {
-            aux = calloc(sizeof(unsigned char), max_block_size);
+            aux = (unsigned char *) calloc(sizeof(unsigned char), max_block_size);
             memcpy(aux, message + block_nr * max_block_size, i - block_nr * max_block_size);
             
             // We can encrypt the value
             printf("Size of the encrypted value: %d\n", i - block_nr * max_block_size);
-            unsigned char * example1 = EncryptUserContent(aux, i - block_nr * max_block_size);
+            unsigned char * example1 = (unsigned char *)  EncryptUserContent(aux, i - block_nr * max_block_size);
 
-            unsigned int e_size = strlen(example1);
-            strcat(encrypted_message, example1);
+            unsigned int e_size = strlen((char *)example1);
+            strcat((char *)encrypted_message, (char *)example1);
             encr_message_len += e_size;
             if (i != message_len)
             {
-                strcat(encrypted_message, "|");
+                strcat((char *)encrypted_message, "|");
                 encr_message_len += + 1;
             }
 
