@@ -24,6 +24,7 @@
 #endif /* __cplusplus */
 
 #ifdef __cplusplus
+void error(const char *msg);
 std::pair<unsigned char*, unsigned int> hash_message(const char *mess1);
 std::pair<unsigned char*, unsigned int> encodeIntoBase64(const unsigned char * message, const unsigned int message_len);
 void printDEBUG(const BIGNUM var);

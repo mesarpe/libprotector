@@ -20,12 +20,6 @@
 #define HOST "192.168.1.1"
 #define PORT_NUMBER 8992
 
-void error(const char *msg)
-{
-    perror(msg);
-    exit(0);
-}
-
 int main(void)
 {
     int key_size = SECURITY_KEYSIZE;
