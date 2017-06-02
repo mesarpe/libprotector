@@ -173,6 +173,7 @@ std::pair<BIGNUM *, BIGNUM *> User::ContentProviderEnc(const unsigned char * com
 	
 	BN_clear_free(aux);
 	BN_clear_free(r);
+	BN_clear_free(componentInBinary);
 	
 	// Create pair (g^r, g^{r \times Xserver} \times d)
 	return std::make_pair(t_1, t_2);
@@ -327,9 +328,7 @@ extern "C" char * EncryptUserContent(const unsigned char * original_content, con
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);
 	std::pair<BIGNUM *, BIGNUM *> p1 = u->ContentProviderEnc(original_content, content_len);
-	
-	BN_clear_free(primeQ);
-	BN_clear_free(userKey);
+	delete u;
 	
 	char * first_part_encr = BN_bn2hex(p1.first);
 	char * second_part_encr = BN_bn2hex(p1.second);
@@ -345,6 +344,12 @@ extern "C" char * EncryptUserContent(const unsigned char * original_content, con
 	BN_clear_free(p1.second);
 	OPENSSL_free(first_part_encr);
 	OPENSSL_free(second_part_encr);
+	
+	BN_clear_free(primeQ);
+	BN_clear_free(userKey);
+	
+	free(res_getPrimeQ);
+	free(res_getUserK);
 	
 	return encrypted_content;
 }
@@ -383,7 +388,24 @@ extern "C" unsigned char * ReDecryptContent(const char * encrypted_content)
 	char * res_char = (char *) calloc(sizeof(char), SECURITY_KEYSIZE/4 + 2);
 	BN_bn2bin(res, res_char);
 	
-	return decodeFromBase64(res_char, SECURITY_KEYSIZE/4 + 2);
+	delete u;
+	
+	BN_clear_free(res);
+	
+	BN_clear_free(b1);
+	BN_clear_free(b2);
+	
+	unsigned char * res_final = decodeFromBase64(res_char, SECURITY_KEYSIZE/4 + 2);
+	
+	free(res_char);
+	
+	BN_clear_free(userKey);
+	BN_clear_free(primeQ);
+	
+	free(res_getPrimeQ);
+	free(res_getUserK);
+	
+	return res_final;
 }
 
 extern "C" unsigned char * ReDecryptAndSplitContent(const char * encrypted_content)

@@ -1,5 +1,4 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument */
+/* A simple server that generates keys for the different users */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -16,9 +15,6 @@
 
 #include "../lib/kms.h"
 #include "../lib/utils.h"
-
-#define HOST "192.168.1.1"
-#define PORT_NUMBER 8992
 
 int main(void)
 {

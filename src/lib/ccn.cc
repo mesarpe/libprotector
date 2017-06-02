@@ -31,6 +31,7 @@ CCN::~CCN(void)
         BN_clear_free(this->numberX_2);
     if(this->primeQ)
         BN_clear_free(this->primeQ);
+    BN_clear_free(this->numberG);
 };
 
 void CCN::setPrimeQ(const BIGNUM * Q)
@@ -229,12 +230,6 @@ std::pair<BIGNUM *, BIGNUM *> CCN::CCNPreDec(const std::pair<BIGNUM *, BIGNUM *>
 	BN_mod_exp(aux, encrypted_payload.first, this->numberX_2, this->primeQ, ctx);
 	BN_CTX_free(ctx);
 	
-	/*printDEBUG(*this->numberX_2);
-	printDEBUG(*this->primeQ);
-	printDEBUG(*encrypted_payload.first);
-	printDEBUG(*encrypted_payload.second);
-	printDEBUG(*aux);*/
-	
 	ctx = BN_CTX_new();
 	BIGNUM * aux2 = BN_new();
 	aux2 = BN_mod_inverse(aux2, aux, this->primeQ, ctx);
@@ -352,6 +347,9 @@ extern "C" char * libprotector_ReEncryptUserContentNoNetwork(const char * user_e
 	char * first_part_encr = BN_bn2hex(p2.first);
 	char * second_part_encr = BN_bn2hex(p2.second);
 	
+	BN_clear_free(p2.first);
+	BN_clear_free(p2.second);
+	
 	/* pack both in a string: append both parts with a pipe */
     char *reencrypted_content = (char*) calloc(sizeof(char), (SECURITY_KEYSIZE/4 + 1) * 2 + 1 + 1);
     strcpy(reencrypted_content, first_part_encr);
@@ -381,7 +379,15 @@ extern "C" char * libprotector_ReEncryptUserContent(const char * user_encr_conte
     BN_hex2bn(&router_primeQ, res_router_getPrimeQ);
     BN_hex2bn(&serverKey, res_getServerK);
 
-    return libprotector_ReEncryptUserContentNoNetwork(user_encr_content, user_encr_len, serverKey, router_primeQ);
+    char * res = libprotector_ReEncryptUserContentNoNetwork(user_encr_content, user_encr_len, serverKey, router_primeQ);
+    
+	free(res_router_getPrimeQ);
+	free(res_getServerK);
+	
+	BN_clear_free(serverKey);
+	BN_clear_free(router_primeQ);
+    
+    return res;
 
     /**
     CCN *router = new CCN();
@@ -525,7 +531,7 @@ extern "C" char * libprotector_DecryptContent(const char * reencrypted_content)
 	
 	std::pair<BIGNUM *, BIGNUM *> p3 = router->CCNPreDec(content_trapdoor);
 	
-	char * first_part_encr = BN_bn2hex(p3.first);
+    char * first_part_encr = BN_bn2hex(p3.first);
 	char * second_part_encr = BN_bn2hex(p3.second);
 	
 	/* pack both in a string: append both parts with a pipe */
@@ -535,13 +541,21 @@ extern "C" char * libprotector_DecryptContent(const char * reencrypted_content)
     strcat(decrypted_content, second_part_encr);
 	
 	/*Free all the generated value */
+	BN_clear_free(p3.first);
+	BN_clear_free(p3.second);
 	BN_clear_free(b1);
-	BN_clear_free(b2);
+    BN_clear_free(b2);
 	
 	delete router;
 	
 	OPENSSL_free(first_part_encr);
 	OPENSSL_free(second_part_encr);
+	
+	free(res_router_getPrimeQ);
+	free(res_getServerK);
+	
+	BN_clear_free(serverKey);
+	BN_clear_free(router_primeQ);
 	
 	return decrypted_content;
 }

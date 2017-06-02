@@ -14,7 +14,7 @@
 
 #define SECURITY_KEYSIZE 512
 
-#define HOST    "192.168.1.1"
+#define HOST    "127.0.0.1"
 #define PORT_NUMBER 8992
 
 #ifdef __cplusplus

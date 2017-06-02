@@ -1,3 +1,6 @@
+/**
+ * This file shows how the program works
+ **/
 #include <openssl/bn.h>
 #include <string.h>
 

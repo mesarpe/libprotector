@@ -3,7 +3,7 @@ project (prime)
 
 #add_library(src/lib/user.cc src/lib/kms.cc src/lib/user.cc src/lib/hashtable.cc src/tools/prime.cc)
 
-SET(GCC_COVERAGE_COMPILE_FLAGS "-fpermissive -std=c++11 -I /usr/include/openssl/ -lcrypto")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-fpermissive -g -std=c++11 -I /usr/include/openssl/ -lcrypto")
 SET(GCC_COVERAGE_LINK_FLAGS    "")
 
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
@@ -16,4 +16,4 @@ add_executable(kms_client src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/
 add_executable(servicetime_encrypt src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc src/tools/servicetime_encrypt.cc)
 add_executable(test_runner src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc test/runner.cc)
 
-add_library(libprotector SHARED src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc)
+add_library(protector SHARED src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc)

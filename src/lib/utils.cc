@@ -189,27 +189,25 @@ std::vector<std::pair <unsigned char*, unsigned int> > Base64Splitter(const unsi
 
     for(unsigned int i=0; i < number_blocks; i++)
     {
-        unsigned char * block = (unsigned char*) calloc (sizeof(unsigned char), max_block_size+1);
         unsigned int block_size = 0;
-
+        if ( i == number_blocks -1)
+            block_size = message_len % max_block_size;
+        else
+            block_size = max_block_size;
+        
+        unsigned char * block = (unsigned char*) calloc (sizeof(unsigned char), block_size+1);
+        
         if (block == NULL)
         {
             printf("FATAL ERROR\n");
             exit(-1);
         }
 
-        memcpy(block, message + offset_message, max_block_size);
-
-        if ( i == number_blocks -1)
-            block_size = message_len % max_block_size;
-        else
-            block_size = max_block_size;
-            
-        
+        memcpy(block, message + offset_message, block_size);
         block[block_size] = '\0';
         offset_message += block_size;
 
-        block_vector.push_back(std::make_pair(block, block_size));
+        block_vector.push_back(std::make_pair(block, block_size+1));
     }
 
     return block_vector;

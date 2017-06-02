@@ -1,3 +1,6 @@
+/**
+ * Demo client for retrieving keys
+ **/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -16,14 +19,8 @@ int main(void)
 {
     std::string * msg2 = new std::string("serverK:0");
     char * res = retrieveKeyFromServer(msg2->c_str());
-
-	char * aux_component = NULL;
-    aux_component = (char *) calloc(sizeof(char), (SECURITY_KEYSIZE/4 + 2));
-    printf("%s\n",aux_component);
-    free(aux_component);
-
+    printf("Retrieved key: %s\n", res);
     free(res);
-    //delete msg1;
-	delete msg2;
+    delete msg2;
     return 0;
 }
