@@ -310,7 +310,7 @@ extern "C" char * EncryptUserContentNoNetwork(const unsigned char * original_con
 }
 
 // Encode and encrypt the content
-extern "C" char * EncryptUserContent(const unsigned char * original_content, const unsigned int content_len)
+extern "C" char * libprotector_EncryptUserContent(const unsigned char * original_content, const unsigned int content_len)
 {
 	//std::pair<unsigned char *, unsigned int> hashed_component = encodeIntoBase64(original_content, content_len);
 	
@@ -408,7 +408,7 @@ extern "C" unsigned char * ReDecryptContent(const char * encrypted_content)
 	return res_final;
 }
 
-extern "C" unsigned char * ReDecryptAndSplitContent(const char * encrypted_content)
+extern "C" unsigned char * libprotector_ReDecryptAndSplitContent(const char * encrypted_content)
 {
 	char * res_getUserK = retrieveKeyFromServer("userK:0");
     char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
@@ -432,7 +432,7 @@ extern "C" unsigned char * ReDecryptAndSplitContent(const char * encrypted_conte
     b64_message[0] = '\0';
     int offset = 0;
 
-    printf("There are # %d keywords (%d)\n", keywords.size(), strlen(encrypted_content));
+    //printf("There are # %d keywords (%d)\n", keywords.size(), strlen(encrypted_content));
 
     for(unsigned int i=0; i<keywords.size(); i+=2)
     {
@@ -450,13 +450,28 @@ extern "C" unsigned char * ReDecryptAndSplitContent(const char * encrypted_conte
         //TODO: HERE IS THE PROBLEM!!!
 	    char * aux = (char *) calloc(sizeof(char), SECURITY_KEYSIZE/4 + 2);
 	    int copied_bytes = BN_bn2bin(res, aux);
+	    BN_clear_free(res);
         memcpy(b64_message+offset, aux, copied_bytes);
-        printf("COPIED: %d\n", copied_bytes);
+        //printf("COPIED: %d\n", copied_bytes);
         offset += copied_bytes;
+        
+        free(aux);
+        
+        BN_clear_free(b1);
+        BN_clear_free(b2);
     }
     b64_message[offset+1] = '\0';
+    
+    delete u;
+    
+    BN_clear_free(primeQ);
+    BN_clear_free(userKey);
+    
+    free(res_getPrimeQ);
+    free(res_getUserK);
+    
 
-    printf("The base64 message is %s (%d vs %d)\n", b64_message, strlen(b64_message),  offset);
+    //printf("The base64 message is %s (%d vs %d)\n", b64_message, strlen(b64_message),  offset);
 	
-	return decodeFromBase64(b64_message, strlen(b64_message));
+	return b64_message;//decodeFromBase64(b64_message, strlen(b64_message));
 }

@@ -257,7 +257,7 @@ unsigned char * EncryptAndSplitContent(const unsigned char * message, const unsi
     for(unsigned int j=0; j<p.size(); j++)
     {
         
-	    example1 = (unsigned char *) EncryptUserContent(p[j].first, p[j].second);
+	    example1 = (unsigned char *) libprotector_EncryptUserContent(p[j].first, p[j].second);
 
         rebuild_vector.push_back(std::make_pair(example1, strlen((char *) example1)));
         rebuild_size += strlen((char *) example1);
@@ -301,7 +301,7 @@ unsigned char * EncryptAndSplitContent_v2(const unsigned char * original_message
             
             // We can encrypt the value
             printf("Size of the encrypted value: %d\n", i - block_nr * max_block_size);
-            unsigned char * example1 = (unsigned char *)  EncryptUserContent(aux, i - block_nr * max_block_size);
+            unsigned char * example1 = (unsigned char *)  libprotector_EncryptUserContent(aux, i - block_nr * max_block_size);
 
             unsigned int e_size = strlen((char *)example1);
             strcat((char *)encrypted_message, (char *)example1);

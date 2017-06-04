@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     unsigned int rebuild_size = 0;
     for(unsigned int j=0; j<p.size(); j++)
     {
-	    example1 = EncryptUserContent(p[j].first, p[j].second);
+	    example1 = libprotector_EncryptUserContent(p[j].first, p[j].second);
 	    
         begin = clock();
         example2 = libprotector_ReEncryptUserContent(example1, strlen(example1));

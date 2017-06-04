@@ -130,15 +130,15 @@ int main(void)
     unsigned int rebuild_size = 0;
     for(unsigned int j=0; j<p.size(); j++)
     {
-	    example1 = EncryptUserContent(p[j].first, p[j].second);
-	    example2 = libprotector_ReEncryptUserContent(example1, strlen(example1));
+	    example1 = libprotector_EncryptUserContent(p[j].first, p[j].second);
+	    example2 = libprotector_ReEncryptUserContent(example1, strlen((char *)example1));
 	    example3 = libprotector_DecryptContent(example2);
 	    example4 = ReDecryptContent(example3);
 
         rebuild_vector.push_back(
             std::make_pair(example4, strlen(reinterpret_cast<const char*>(example4)) + 1)
         );
-        rebuild_size += strlen(example4);
+        rebuild_size += strlen((char *)example4);
 
         free(example1);
         free(example2);

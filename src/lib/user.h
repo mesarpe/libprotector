@@ -48,7 +48,7 @@ char * EncryptUserName(const char * original_content_name);
 #ifdef __cplusplus
 extern "C"
 #endif /* __cplusplus */
-char * EncryptUserContent(const unsigned char * original_content, const unsigned int content_len);
+char * libprotector_EncryptUserContent(const unsigned char * original_content, const unsigned int content_len);
 
 #ifdef __cplusplus
 extern "C"
@@ -63,6 +63,6 @@ unsigned char * ReDecryptContent(const char * encrypted_content);
 #ifdef __cplusplus
 extern "C"
 #endif /* __cplusplus */
-unsigned char * ReDecryptAndSplitContent(const char * encrypted_content);
+unsigned char * libprotector_ReDecryptAndSplitContent(const char * encrypted_content);
 
 #endif
