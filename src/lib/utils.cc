@@ -131,15 +131,15 @@ std::pair <unsigned char*, unsigned int> encodeIntoBase64(const unsigned char * 
 	BIO_write(bio, message, message_len);
 	BIO_flush(bio);
 	BIO_get_mem_ptr(bio, &bufferPtr);
-	BIO_set_close(bio, BIO_NOCLOSE);
 
 	unsigned char *b64text = (unsigned char*) malloc((bufferPtr->length + 1) * sizeof(unsigned char));
 	memcpy(b64text, bufferPtr->data, bufferPtr->length);
 	b64text[bufferPtr->length] = '\0';
 	
-	BIO_free_all(bio);
+	int b64text_size = bufferPtr->length;
+	BIO_free_all(b64);
 	
-	return std::make_pair(b64text, bufferPtr->length);
+	return std::make_pair(b64text, b64text_size);
 }
 
 size_t calcDecodeLength(const unsigned char* b64input) { //Calculates the length of a decoded string

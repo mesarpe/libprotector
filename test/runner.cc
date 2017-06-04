@@ -7,9 +7,9 @@
 
 #include "../src/lib/utils.h"
 
-TEST_CASE("Basic test of encryption/decryption") {
+TEST_CASE("Basic test of encryption/decryption without converting to base64 the values") {
 
-    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 80);
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 5);
 	message_to_send[0] = 'H';
 	message_to_send[1] = 'O';
 	message_to_send[2] = 'L';
@@ -22,22 +22,155 @@ TEST_CASE("Basic test of encryption/decryption") {
     unsigned char * example4 = NULL;
     
     example1 = libprotector_EncryptUserContent(message_to_send, 5);
-    //printf("EncryptUserContent: %s\n", example1);
-    
     example2 = libprotector_ReEncryptUserContent(example1, strlen((char *)example1));
-    //printf("ReEncryptUserContent: %s\n", example2);
-    
     example3 = libprotector_DecryptContent(example2);
-    //printf("Pre-DecryptUserContent: %s\n", example3);
-
-    //example4 = ReDecryptContent(example3);    
     example4 = libprotector_ReDecryptAndSplitContent(example3);
-    CHECK_EQ(strcmp(example4, "HOLA"), 0);
+    CHECK_EQ(strcmp((char *) example4, "HOLA"), 0);
     
     free(example4);
     free(example3);
     free(example2);
     free(example1);
+    
+    free(message_to_send);
+}
+
+TEST_CASE("T1: test base64: encode and decode hola"){
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 5);
+	message_to_send[0] = 'H';
+	message_to_send[1] = 'O';
+	message_to_send[2] = 'L';
+	message_to_send[3] = 'A';
+	message_to_send[4] = '\0';
+	
+	std::pair <unsigned char*, unsigned int> inb64text = encodeIntoBase64(message_to_send, 5);
+	printf("This is how the b64 looks like: %s %s\n", inb64text.first, "SE9MQQo=");
+	
+	// SE9MQQo=, result obtained with the bash command: echo "HOLA" | base64
+	//CHECK_EQ(inb64text.second, strlen("SE9MQQo="));
+	//CHECK_EQ(strcmp((char *)inb64text.first, "SE9MQQo="), 0);
+	
+    unsigned char * decoded_base64_text = decodeFromBase64(inb64text.first, inb64text.second);
+    
+    free(inb64text.first);
+    
+    CHECK_EQ(strcmp((char *)decoded_base64_text, (char *)message_to_send), 0);
+    
+    free(decoded_base64_text);
+    free(message_to_send);
+}
+
+TEST_CASE("T1: test base64: encode and decode Hello world"){
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 12);
+	message_to_send[0] = 'h';
+	message_to_send[1] = 'e';
+	message_to_send[2] = 'l';
+	message_to_send[3] = 'l';
+	message_to_send[4] = 'o';
+	message_to_send[5] = ' ';
+	message_to_send[6] = 'w';
+	message_to_send[7] = 'o';
+	message_to_send[8] = 'r';
+	message_to_send[9] = 'l';
+	message_to_send[10] = 'd';
+	message_to_send[11] = '\0';
+	
+	std::pair <unsigned char*, unsigned int> inb64text = encodeIntoBase64(message_to_send, 12);
+	printf("This is how the b64 looks like: %s %s\n", inb64text.first, "SE9MQQo=");
+	
+	// SE9MQQo=, result obtained with the bash command: echo "HOLA" | base64
+	//CHECK_EQ(inb64text.second, strlen("SGVsbG8gd29ybGQK"));
+	//CHECK_EQ(strcmp((char *)inb64text.first, "SGVsbG8gd29ybGQK"), 0);
+	
+    unsigned char * decoded_base64_text = decodeFromBase64(inb64text.first, inb64text.second);
+    
+    free(inb64text.first);
+    
+    CHECK_EQ(strcmp((char *)decoded_base64_text, (char *)message_to_send), 0);
+    
+    free(decoded_base64_text);
+    free(message_to_send);
+}
+
+TEST_CASE("T1: test base64: encode and decode A(1000 times)"){
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 1000);
+    
+    for(int i=0; i<1000; i++)
+    {
+	    message_to_send[i] = 'A';
+	}
+	
+	std::pair <unsigned char*, unsigned int> inb64text = encodeIntoBase64(message_to_send, 1000);
+	printf("This is how the b64 looks like: %s %s\n", inb64text.first, "SE9MQQo=");
+	
+	// SE9MQQo=, result obtained with the bash command: echo "HOLA" | base64
+	//CHECK_EQ(inb64text.second, strlen("SGVsbG8gd29ybGQK"));
+	//CHECK_EQ(strcmp((char *)inb64text.first, "SGVsbG8gd29ybGQK"), 0);
+	
+    unsigned char * decoded_base64_text = decodeFromBase64(inb64text.first, inb64text.second);
+    
+    free(inb64text.first);
+    
+    CHECK_EQ(strcmp((char *)decoded_base64_text, (char *)message_to_send), 0);
+    
+    free(decoded_base64_text);
+    free(message_to_send);
+}
+
+TEST_CASE("T1: test base64: encode and decode A(4000 times)"){
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 4000);
+    
+    for(int i=0; i<4000; i++)
+    {
+	    message_to_send[i] = 'A';
+	}
+	
+	std::pair <unsigned char*, unsigned int> inb64text = encodeIntoBase64(message_to_send, 4000);
+	printf("This is how the b64 looks like: %s %s\n", inb64text.first, "SE9MQQo=");
+	
+	// SE9MQQo=, result obtained with the bash command: echo "HOLA" | base64
+	//CHECK_EQ(inb64text.second, strlen("SGVsbG8gd29ybGQK"));
+	//CHECK_EQ(strcmp((char *)inb64text.first, "SGVsbG8gd29ybGQK"), 0);
+	
+    unsigned char * decoded_base64_text = decodeFromBase64(inb64text.first, inb64text.second);
+    
+    free(inb64text.first);
+    
+    CHECK_EQ(strcmp((char *)decoded_base64_text, (char *)message_to_send), 0);
+    
+    free(decoded_base64_text);
+    free(message_to_send);
+}
+
+TEST_CASE("Basic test of encryption/decryption without converting to base64 the values") {
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * 5);
+	message_to_send[0] = 'H';
+	message_to_send[1] = 'O';
+	message_to_send[2] = 'L';
+	message_to_send[3] = 'A';
+	message_to_send[4] = '\0';
+	
+	char * example1 = NULL;
+    char * example2 = NULL;
+    char * example3 = NULL;
+    unsigned char * example4 = NULL;
+    
+    std::vector<std::pair <unsigned char*, unsigned int> > p;
+    p = Base64Splitter(message_to_send, strlen((char *) message_to_send), 32);
+    
+    for(unsigned int j=0; j<p.size(); j++)
+    {
+        example1 = libprotector_EncryptUserContent(p[j].first, p[j].second);
+        example2 = libprotector_ReEncryptUserContent(example1, strlen((char *)example1));
+        example3 = libprotector_DecryptContent(example2);
+        example4 = libprotector_ReDecryptAndSplitContent(example3);
+        CHECK_EQ(strcmp((char *) example4, "HOLA"), 0);
+        
+        free(example4);
+        free(example3);
+        free(example2);
+        free(example1);
+    }
     
     free(message_to_send);
 }

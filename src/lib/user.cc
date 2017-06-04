@@ -287,10 +287,7 @@ extern "C" char * EncryptUserContentNoNetwork(const unsigned char * original_con
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);
 	std::pair<BIGNUM *, BIGNUM *> p1 = u->ContentProviderEnc(original_content, content_len);
-	
-	BN_clear_free(primeQ);
-	BN_clear_free(userKey);
-	
+		
 	char * first_part_encr = BN_bn2hex(p1.first);
 	char * second_part_encr = BN_bn2hex(p1.second);
 	
@@ -386,7 +383,7 @@ extern "C" unsigned char * ReDecryptContent(const char * encrypted_content)
 	
 	BIGNUM * res = u->UserDec(utrapdoor);
 	char * res_char = (char *) calloc(sizeof(char), SECURITY_KEYSIZE/4 + 2);
-	BN_bn2bin(res, res_char);
+	BN_bn2bin(res, (unsigned char *) res_char);
 	
 	delete u;
 	
@@ -395,7 +392,7 @@ extern "C" unsigned char * ReDecryptContent(const char * encrypted_content)
 	BN_clear_free(b1);
 	BN_clear_free(b2);
 	
-	unsigned char * res_final = decodeFromBase64(res_char, SECURITY_KEYSIZE/4 + 2);
+	unsigned char * res_final = decodeFromBase64((unsigned char * ) res_char, SECURITY_KEYSIZE/4 + 2);
 	
 	free(res_char);
 	
@@ -449,7 +446,7 @@ extern "C" unsigned char * libprotector_ReDecryptAndSplitContent(const char * en
 	    BIGNUM * res = u->UserDec(utrapdoor);
         //TODO: HERE IS THE PROBLEM!!!
 	    char * aux = (char *) calloc(sizeof(char), SECURITY_KEYSIZE/4 + 2);
-	    int copied_bytes = BN_bn2bin(res, aux);
+	    int copied_bytes = BN_bn2bin(res, (unsigned char *) aux);
 	    BN_clear_free(res);
         memcpy(b64_message+offset, aux, copied_bytes);
         //printf("COPIED: %d\n", copied_bytes);
@@ -473,5 +470,5 @@ extern "C" unsigned char * libprotector_ReDecryptAndSplitContent(const char * en
 
     //printf("The base64 message is %s (%d vs %d)\n", b64_message, strlen(b64_message),  offset);
 	
-	return b64_message;//decodeFromBase64(b64_message, strlen(b64_message));
+	return (unsigned char*) b64_message;
 }
