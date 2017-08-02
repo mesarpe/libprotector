@@ -506,14 +506,11 @@ extern "C" char * libprotector_ReEncryptAndSplitUserContent(const char * user_en
 	return reencrypted_content;
 }
 
-extern "C" char * libprotector_DecryptContent(const char * reencrypted_content)
+extern "C" char * libprotector_DecryptContentWithKeys(const char * reencrypted_content, const char * res_getServerK, const char * res_router_getPrimeQ)
 {
-	BIGNUM * router_primeQ = BN_new();
+    BIGNUM * router_primeQ = BN_new();
     BIGNUM * serverKey = BN_new();
 
-    char * res_getServerK = retrieveKeyFromServer("serverK:0");
-    char * res_router_getPrimeQ = retrieveKeyFromServer("primeQ");
-        
     BN_hex2bn(&router_primeQ, res_router_getPrimeQ);
     BN_hex2bn(&serverKey, res_getServerK);
 
@@ -558,11 +555,22 @@ extern "C" char * libprotector_DecryptContent(const char * reencrypted_content)
 	OPENSSL_free(first_part_encr);
 	OPENSSL_free(second_part_encr);
 	
-	free(res_router_getPrimeQ);
-	free(res_getServerK);
 	
 	BN_clear_free(serverKey);
 	BN_clear_free(router_primeQ);
+	
+	return decrypted_content;
+}
+
+extern "C" char * libprotector_DecryptContent(const char * reencrypted_content)
+{
+    char * res_getServerK = retrieveKeyFromServer("serverK:0");
+    char * res_router_getPrimeQ = retrieveKeyFromServer("primeQ");
+    
+	char * decrypted_content = libprotector_DecryptContentWithKeys(reencrypted_content, res_getServerK, res_router_getPrimeQ);
+
+	free(res_router_getPrimeQ);
+	free(res_getServerK);
 	
 	return decrypted_content;
 }

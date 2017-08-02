@@ -358,12 +358,9 @@ extern "C" char * libprotector_EncryptUserContent(const unsigned char * original
 	return encrypted_content;
 }
 
-extern "C" unsigned char * libprotector_ReDecryptContent(const char * encrypted_content)
+extern "C" unsigned char * libprotector_ReDecryptContentWithKeys(const char * encrypted_content, const char * res_getUserK, const char * res_getPrimeQ)
 {
-	char * res_getUserK = retrieveKeyFromServer("userK:0");
-    char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
-	
-	BIGNUM * primeQ = BN_new();
+    BIGNUM * primeQ = BN_new();
     BIGNUM * userKey = BN_new();
 	
     BN_hex2bn(&primeQ, res_getPrimeQ);
@@ -401,6 +398,16 @@ extern "C" unsigned char * libprotector_ReDecryptContent(const char * encrypted_
 	
 	BN_clear_free(userKey);
 	BN_clear_free(primeQ);
+	
+	return res_char;
+}
+
+extern "C" unsigned char * libprotector_ReDecryptContent(const char * encrypted_content)
+{
+	char * res_getUserK = retrieveKeyFromServer("userK:0");
+    char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
+	
+	char * res_char = libprotector_ReDecryptContentWithKeys(encrypted_content, res_getUserK, res_getPrimeQ);
 	
 	free(res_getPrimeQ);
 	free(res_getUserK);

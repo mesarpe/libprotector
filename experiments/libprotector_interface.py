@@ -24,8 +24,18 @@ def ccn_re_enc_w_keys(t1, t2, server_key, prime_q):
 def ccn_re_enc(t1, t2):
     return lib.libprotector_ReEncryptUserContent(ctypes.c_char_p(t1), ctypes.c_uint(t2))
     
+
+def ccn_pre_dec_w_keys(t, server_key, prime_q):
+    res = lib.libprotector_DecryptContent(ctypes.c_char_p(t), ctypes.c_char_p(server_key), ctypes.c_char_p(prime_q));
+    
+    return ctypes.c_char_p(res).value
+
 def ccn_pre_dec(t):
     return lib.libprotector_DecryptContent(ctypes.c_char_p(t));
 
+def client_dec_w_keys(t, user_key, prime_q):
+    res = lib.libprotector_ReDecryptContent(ctypes.c_char_p(t), ctypes.c_char_p(user_key), ctypes.c_char_p(prime_q));
+    
+    return ctypes.c_char_p(res).value
 def client_dec(t):
     return lib.libprotector_ReDecryptContent(ctypes.c_char_p(t));

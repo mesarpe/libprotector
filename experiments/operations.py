@@ -25,13 +25,13 @@ def encrypt_and_decrypt(list_components, user_key, server_key, prime_q):
         res[1] += end_time - start_time
         
         start_time = time.time()
-        t = str(libprotector_interface.ccn_pre_dec(t))
+        t = str(libprotector_interface.ccn_pre_dec_w_keys(t, server_key, prime_q))
         end_time = time.time()
         
         res[2] += end_time - start_time
         
         start_time = time.time()
-        libprotector_interface.client_dec(t)
+        libprotector_interface.client_dec_w_keys(t, user_key, prime_q)
         end_time = time.time()
         
         res[3] += end_time - start_time
@@ -39,7 +39,7 @@ def encrypt_and_decrypt(list_components, user_key, server_key, prime_q):
     return res
         
 
-def main(filename, protector, number_names):
+def main(filename, number_names):
     data = lookup.readInput(filename)
     random.shuffle(data)
     
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     r_a = []
     r_s = []
 
-    r_a, r_s = main(options.trace_filename, options.protector, options.number_names)
+    r_a, r_s = main(options.trace_filename, options.number_names)
     
     if options.show_headers:
         print "user_enc_avg",
