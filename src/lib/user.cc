@@ -306,19 +306,13 @@ extern "C" char * EncryptUserContentNoNetwork(const unsigned char * original_con
 	return encrypted_content;
 }
 
-// Encode and encrypt the content
-extern "C" char * libprotector_EncryptUserContent(const unsigned char * original_content, const unsigned int content_len)
+extern "C" char * libprotector_EncryptUserContentWithKeys(const unsigned char * original_content, const unsigned int content_len, const char * user_key, const char * prime_q)
 {
-	//std::pair<unsigned char *, unsigned int> hashed_component = encodeIntoBase64(original_content, content_len);
-	
-	char * res_getUserK = retrieveKeyFromServer("userK:0");
-    char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
-	
-	BIGNUM * primeQ = BN_new();
+    BIGNUM * primeQ = BN_new();
     BIGNUM * userKey = BN_new();
 	
-    BN_hex2bn(&primeQ, res_getPrimeQ);
-    BN_hex2bn(&userKey, res_getUserK);
+    BN_hex2bn(&primeQ, prime_q);
+    BN_hex2bn(&userKey, user_key);
 
     User *u = new User();
 
@@ -345,13 +339,26 @@ extern "C" char * libprotector_EncryptUserContent(const unsigned char * original
 	BN_clear_free(primeQ);
 	BN_clear_free(userKey);
 	
+	return encrypted_content;
+}
+
+// Encode and encrypt the content
+extern "C" char * libprotector_EncryptUserContent(const unsigned char * original_content, const unsigned int content_len)
+{
+	//std::pair<unsigned char *, unsigned int> hashed_component = encodeIntoBase64(original_content, content_len);
+	
+	char * res_getUserK = retrieveKeyFromServer("userK:0");
+    char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
+	
+	char * encrypted_content = libprotector_EncryptUserContentWithKeys(original_content, content_len, res_getUserK, res_getPrimeQ);
+	
 	free(res_getPrimeQ);
 	free(res_getUserK);
 	
 	return encrypted_content;
 }
 
-extern "C" unsigned char * ReDecryptContent(const char * encrypted_content)
+extern "C" unsigned char * libprotector_ReDecryptContent(const char * encrypted_content)
 {
 	char * res_getUserK = retrieveKeyFromServer("userK:0");
     char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
@@ -392,17 +399,13 @@ extern "C" unsigned char * ReDecryptContent(const char * encrypted_content)
 	BN_clear_free(b1);
 	BN_clear_free(b2);
 	
-	unsigned char * res_final = decodeFromBase64((unsigned char * ) res_char, SECURITY_KEYSIZE/4 + 2);
-	
-	free(res_char);
-	
 	BN_clear_free(userKey);
 	BN_clear_free(primeQ);
 	
 	free(res_getPrimeQ);
 	free(res_getUserK);
 	
-	return res_final;
+	return (unsigned char *) res_char;//res_final;
 }
 
 extern "C" unsigned char * libprotector_ReDecryptAndSplitContent(const char * encrypted_content)

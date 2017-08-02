@@ -368,24 +368,31 @@ extern "C" char * libprotector_ReEncryptUserContentNoNetwork(const char * user_e
 	return reencrypted_content;
 }
 
-extern "C" char * libprotector_ReEncryptUserContent(const char * user_encr_content, const unsigned int user_encr_len)
+extern "C" char * libprotector_ReEncryptUserContentWithKeys(const char * user_encr_content, const unsigned int user_encr_len, const char * res_getServerKey, const char * res_router_getPrimeQ)
 {
-	BIGNUM * router_primeQ = BN_new();
+    BIGNUM * router_primeQ = BN_new();
     BIGNUM * serverKey = BN_new();
-
-    char * res_getServerK = retrieveKeyFromServer("serverK:0");
-    char * res_router_getPrimeQ = retrieveKeyFromServer("primeQ");
-        
+    
     BN_hex2bn(&router_primeQ, res_router_getPrimeQ);
-    BN_hex2bn(&serverKey, res_getServerK);
+    BN_hex2bn(&serverKey, res_getServerKey);
 
     char * res = libprotector_ReEncryptUserContentNoNetwork(user_encr_content, user_encr_len, serverKey, router_primeQ);
     
-	free(res_router_getPrimeQ);
-	free(res_getServerK);
-	
 	BN_clear_free(serverKey);
 	BN_clear_free(router_primeQ);
+	
+	return res;
+}
+
+extern "C" char * libprotector_ReEncryptUserContent(const char * user_encr_content, const unsigned int user_encr_len)
+{
+	char * res_getServerK = retrieveKeyFromServer("serverK:0");
+    char * res_router_getPrimeQ = retrieveKeyFromServer("primeQ");
+        
+    char * res = libprotector_ReEncryptUserContentWithKeys(user_encr_content, user_encr_len, res_getServerK, res_router_getPrimeQ);
+	
+	free(res_router_getPrimeQ);
+	free(res_getServerK);
     
     return res;
 

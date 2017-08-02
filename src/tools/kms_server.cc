@@ -96,7 +96,7 @@ int main(void)
 			if (parts2.size() == 2)
 			{
 				aux_component = kms->getServerKey(std::stoul (parts2[1],nullptr,0));
-				//printf("Here is the ServerK: %s\n",aux_component);
+				//printf("Here is the UserK: %s\n",aux_component);
 				n = write(newsockfd,aux_component, string_size+1);
 				if (n < 0) error("ERROR writing to socket");
 			}

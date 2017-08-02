@@ -58,7 +58,7 @@ char * EncryptUserContentNoNetwork(const unsigned char * original_content, const
 #ifdef __cplusplus
 extern "C"
 #endif /* __cplusplus */
-unsigned char * ReDecryptContent(const char * encrypted_content);
+unsigned char * libprotector_ReDecryptContent(const char * encrypted_content);
 
 #ifdef __cplusplus
 extern "C"

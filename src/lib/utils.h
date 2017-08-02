@@ -12,7 +12,7 @@
 
 #include "user.h"
 
-#define SECURITY_KEYSIZE 512
+#define SECURITY_KEYSIZE 2048
 
 #define HOST    "127.0.0.1"
 #define PORT_NUMBER 8992

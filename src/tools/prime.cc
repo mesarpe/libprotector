@@ -133,7 +133,7 @@ int main(void)
 	    example1 = libprotector_EncryptUserContent(p[j].first, p[j].second);
 	    example2 = libprotector_ReEncryptUserContent(example1, strlen((char *)example1));
 	    example3 = libprotector_DecryptContent(example2);
-	    example4 = ReDecryptContent(example3);
+	    example4 = libprotector_ReDecryptContent(example3);
 
         rebuild_vector.push_back(
             std::make_pair(example4, strlen(reinterpret_cast<const char*>(example4)) + 1)

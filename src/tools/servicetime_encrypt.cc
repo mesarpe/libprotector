@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
         printf("%f %f\n", time_spent, decr_time_spent);
 
-	    example4 = ReDecryptContent(example3);
+	    example4 = libprotector_ReDecryptContent(example3);
 
         //rebuild_vector.push_back(std::make_pair(example4, strlen(example4) + 1));
         //rebuild_size += strlen(example4);

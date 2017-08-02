@@ -160,7 +160,6 @@ unsigned char * decodeFromBase64(unsigned char * b64_text, unsigned int b64_len)
 	
 	int decodeLen = calcDecodeLength(b64_text);
 	unsigned char * original_text = (unsigned char*)calloc(sizeof(unsigned char), decodeLen + 1);
-	original_text[decodeLen] = '\0';
 
 	bio_dec = BIO_new_mem_buf(b64_text, -1);
 	b64_dec = BIO_new(BIO_f_base64());
@@ -169,6 +168,8 @@ unsigned char * decodeFromBase64(unsigned char * b64_text, unsigned int b64_len)
 	BIO_set_flags(bio_dec, BIO_FLAGS_BASE64_NO_NL); //Do not use newlines to flush buffer
 	/*int read_bytes = */BIO_read(bio_dec, original_text, b64_len);
 	BIO_free_all(bio_dec);
+	
+	original_text[decodeLen] = '\0';
 	
 	return original_text;
 }
@@ -234,8 +235,9 @@ std::pair <unsigned char*, unsigned int> Base64Joiner(std::vector<std::pair <uns
         
         if (vec[i].second - 1 >= 1)
         {
-            memcpy(message + offset_message, vec[i].first, vec[i].second);
-            offset_message += vec[i].second;
+            //we should not copy the \0 of every string, that explains the -1
+            memcpy(message + offset_message, vec[i].first, vec[i].second-1);
+            offset_message += vec[i].second-1;
         }
     }
     message[offset_message] = '\0';
