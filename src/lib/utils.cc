@@ -43,6 +43,7 @@ void error(const char *msg)
 
 char * retrieveKeyFromServer(const char * key)
 {
+    printf("RETRIEVE KEYS FROM SERVER\n");
     // TODO: the 65 should be relative to the key size
     int key_size = SECURITY_KEYSIZE;
     int string_size = (key_size / 4 ) + 2;

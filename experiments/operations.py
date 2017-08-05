@@ -1,3 +1,4 @@
+import logging
 import numpy
 import optparse
 import random
@@ -7,14 +8,37 @@ import libprotector_interface
 
 import lookup
 
-def encrypt_and_decrypt(list_components, user_key, server_key, prime_q):
-    res = [0,0,0,0]
+NR_USERS = 0
+
+def encrypt_and_decrypt(list_components, k, keysize):
+    global NR_USERS
+    res = [0,0,0,0,0,0,0,0]
+    
+    #get primeq, get userk, get server k
+    
+    
+    start_time = time.time()
+    k.addUser()
+    end_time = time.time()
+    res[7] += end_time - start_time
+    
+    
+    server_key = k.getProxyKey(NR_USERS)
+    user_key = k.getClientKey(NR_USERS)
+    prime_q = k.getPrimeQ()
+    NR_USERS+=1
     
     for c in list_components:
+        content = "A"*2048
+    
+        logging.debug("Component={0}".format(c))
+        logging.debug("Content={0}".format(content))
         
         start_time = time.time()
         u = libprotector_interface.user_enc_w_keys(c, user_key, prime_q)
         end_time = time.time()
+        
+        logging.debug("NameTD={0}".format(u))
         
         res[0] += end_time - start_time
         
@@ -24,22 +48,44 @@ def encrypt_and_decrypt(list_components, user_key, server_key, prime_q):
         
         res[1] += end_time - start_time
         
+        logging.debug("CCN-NameTD={0}".format(t))
+        
         start_time = time.time()
-        t = str(libprotector_interface.ccn_pre_dec_w_keys(t, server_key, prime_q))
+        content = libprotector_interface.user_enc_w_keys(content, user_key, prime_q)
         end_time = time.time()
         
         res[2] += end_time - start_time
         
+        logging.debug("ContentTD={0}".format(content))
+        
         start_time = time.time()
-        libprotector_interface.client_dec_w_keys(t, user_key, prime_q)
+        content_mk = libprotector_interface.ccn_re_enc_w_keys(content, len(content), user_key, prime_q)
         end_time = time.time()
         
         res[3] += end_time - start_time
+        
+        logging.debug("CCN-ContentTD={0}".format(content_mk))
+        
+        start_time = time.time()
+        t = str(libprotector_interface.ccn_pre_dec_w_keys(content_mk, server_key, prime_q))
+        end_time = time.time()
+        
+        res[4] += end_time - start_time
+        
+        logging.debug("CCN-Content-Dec={0}".format(t))
+        
+        start_time = time.time()
+        t = libprotector_interface.client_dec_w_keys(t, user_key, prime_q)
+        end_time = time.time()
+        
+        res[5] += end_time - start_time
+        
+        logging.debug("Content-Dec={0}".format(t))
     
     return res
         
 
-def main(filename, number_names):
+def main(filename, keysize, number_names, debug=False):
     data = lookup.readInput(filename)
     random.shuffle(data)
     
@@ -48,13 +94,11 @@ def main(filename, number_names):
     
     res = []
     
-    #get primeq, get userk, get server k
-    user_key = libprotector_interface.getUserKey(0)
-    server_key = libprotector_interface.getServerKey(0)
-    prime_q = libprotector_interface.getPrimeQ()
     
     for name in selected_names:
-        res.append(encrypt_and_decrypt(name, user_key, server_key, prime_q))
+        k = libprotector_interface.KMS()
+        k.initKMS(keysize)
+        res.append(encrypt_and_decrypt(name, k, keysize))
     
     return numpy.average(res, axis=0), numpy.std(res, axis=0)
     
@@ -67,44 +111,38 @@ if __name__ == '__main__':
                       dest="trace_filename",
                       default=None,
                       help="select the trace file")
-    parser.add_option("-s", "--headers",
-                      dest="show_headers",
-                      help="Show headers.",
-                      default=False,
-                      action="store_true",
-                      )
     parser.add_option("-x", "--number_names",
                       dest="number_names",
                       type=int,
                       help="number of names to evaluate"
     )
+    parser.add_option("-k", "--keysize",
+                      dest="keysize",
+                      type=int,
+                      help="security parameter, keysize"
+    )
+    parser.add_option("-d", "--debug",
+                      dest="debug",
+                      default=False,
+                      action="store_true",
+                      help=""
+    )
     (options, args) = parser.parse_args()
+    
+    if options.debug:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
     
     r_a = []
     r_s = []
 
-    r_a, r_s = main(options.trace_filename, options.number_names)
+    r_a, r_s = main(options.trace_filename, options.keysize, options.number_names)
     
-    if options.show_headers:
-        print "user_enc_avg",
-        print "\t",
-        print "ccn_re_enc_avg",
-        print "\t",
-        print "ccn_pre_dec_avg",
-        print "\t",
-        print "client_dec_avg",
-        print "\t",
-        
-        print "user_enc_std",
-        print "\t",
-        print "ccn_re_enc_std",
-        print "\t",
-        print "ccn_pre_dec_std",
-        print "\t",
-        print "client_dec_std"
+    functions = ["user_enc", "ccn_re_enc", "cp_enc", "cp_re_enc", "ccn_pre_dec", "client_dec", "initKMS", "keygen"]
     
-    print "\t".join([str(x) for x in r_a]),
-    print "\t",
-    print "\t".join([str(x) for x in r_s]),
-    print "\t"
-
+    for i in range(len(r_a)):
+        print functions[i], r_a[i], r_s[i]    
+    #print "\t".join([str(x) for x in r_a]),
+    #print "\t",
+    #print "\t".join([str(x) for x in r_s]),
+    

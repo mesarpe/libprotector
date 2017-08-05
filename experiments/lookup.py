@@ -8,11 +8,11 @@ import time
 
 import libprotector_interface
 
-def callProtector(component):
-    a = libprotector_interface.user_enc(component)
+def callProtector(component, server_key, user_key, prime_q):
+    a = libprotector_interface.user_enc_w_keys(component, user_key, prime_q)
     res = str(a)
     len_ = len(res)
-    return libprotector_interface.ccn_re_enc(a, len(a))
+    return libprotector_interface.ccn_re_enc_w_keys(a, len(a), server_key, prime_q)
 
 def compareTwoNames(n1, n2):
     res = True
@@ -39,11 +39,17 @@ def readInput(filename):
     return list_components
 
 def encrypt(list_components, use_protector=False):
+
+    user_key = libprotector_interface.getUserKey(0)
+    server_key = libprotector_interface.getServerKey(0)
+    prime_q = libprotector_interface.getPrimeQ()
+
+        
     new_l = []
     for name in list_components:
         p = []
         for c in name:
-            p.append(str(callProtector(c)))
+            p.append(str(callProtector(c, server_key, user_key, prime_q)))
         new_l.append(p)
     return new_l
 
@@ -70,7 +76,6 @@ def main(filename, protector):
     for u in userset:
         for r in userset:
             compareTwoNames(u, r)
-            
     
     end_time = time.time()
     

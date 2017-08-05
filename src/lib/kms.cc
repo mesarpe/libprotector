@@ -1,7 +1,7 @@
+#include <openssl/bn.h>
+
 #include "kms.h"
 #include "utils.h"
-
-#include <openssl/bn.h>
 
 #define TRUE 1
 
@@ -170,3 +170,46 @@ char * KMS::getUserKey(unsigned int index)
     return res;
 }
 
+
+extern "C" KMS * libprotector_KMS_new() {
+        return new KMS();
+}
+
+extern "C" void libprotector_KMS_destroy(KMS * kms)
+{
+    delete reinterpret_cast<KMS *>(kms);
+}
+
+extern "C" int libprotector_KMS_InitKMS(KMS * kms, int nr_bits)
+{
+    return reinterpret_cast<KMS *>(kms)->InitKMS(nr_bits);
+}
+
+extern "C" int libprotector_KMS_addUser(KMS * kms )
+{
+    return reinterpret_cast<KMS *>(kms)->addUser();
+}
+
+extern "C" char * libprotector_KMS_getProxyKey(KMS * kms, unsigned int user_id)
+{
+    reinterpret_cast<KMS *>(kms)->getServerKey(user_id);
+}
+
+extern "C" char * libprotector_KMS_getClientKey(KMS * kms, unsigned int user_id)
+{
+    return reinterpret_cast<KMS *>(kms)->getUserKey(user_id);
+}
+
+extern "C" char * libprotector_KMS_getPrimeQ(KMS * kms)
+{
+    BIGNUM * Q = reinterpret_cast<KMS *>(kms)->getPrimeQ();
+    
+    int keysize = reinterpret_cast<KMS *>(kms)->getKeysize();
+    
+    char * char_q = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(Q);
+    memcpy((void *) (char_q), (void *) aux_component, (keysize/4));
+    
+    return char_q;
+
+}

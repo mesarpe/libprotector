@@ -13,8 +13,8 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "../lib/kms.h"
 #include "../lib/utils.h"
+#include "../lib/kms.h"
 
 int main(void)
 {
