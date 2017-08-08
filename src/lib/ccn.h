@@ -19,9 +19,10 @@
         BIGNUM * numberX_2;
         BIGNUM * primeQ;
 		BIGNUM * numberG;
+        
 
         public:
-            CCN(void);
+            CCN(unsigned int keysize);
             ~CCN(void);
             BIGNUM * CCNTD(const std::pair<BIGNUM *, BIGNUM *>);
             char * FullCCNTD(const std::vector<std::pair<BIGNUM *, BIGNUM *> > *);
@@ -34,6 +35,8 @@
             void setServerKey(const BIGNUM *);
             void setPrimeQ(const BIGNUM *);
 			void setNumberG(const BIGNUM *);
+			
+			unsigned int keysize;
     };
 #endif /* __cplusplus */
 

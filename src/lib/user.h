@@ -22,9 +22,10 @@ class User{
     BIGNUM * numberS = NULL;
     BIGNUM * numberG = NULL;
     BIGNUM * primeQ = NULL;
+    
 
     public:
-        User(void);
+        User(unsigned int keysize);
         ~User(void);
         
         std::pair<BIGNUM *, BIGNUM *> UserTD(const unsigned char *, unsigned int);
@@ -37,6 +38,8 @@ class User{
         void setUserKey(const BIGNUM *);
         void setNumberG(const BIGNUM *);
         void setPrimeQ(const BIGNUM *);
+        
+        unsigned int keysize;
 };
 #endif /* __cplusplus */
 

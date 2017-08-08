@@ -1,3 +1,4 @@
+import base64
 import logging
 import numpy
 import optparse
@@ -5,6 +6,8 @@ import random
 import time
 
 import libprotector_interface
+
+from libprotector_interface import KMS, CCN, User
 
 import lookup
 
@@ -16,11 +19,27 @@ def encrypt_and_decrypt(list_components, k, keysize):
     
     #get primeq, get userk, get server k
     
-    
     start_time = time.time()
     k.addUser()
     end_time = time.time()
     res[7] += end_time - start_time
+    
+    proxy_key = k.getProxyKey(0)
+    user_key  = k.getClientKey(0)
+    prime_q = k.getPrimeQ()
+    
+    user = User(keysize)
+    user.setClientKey(user_key)
+    user.setPrimeQ(prime_q)
+    user.setNumberG("2")
+    
+    ccn = CCN(keysize)
+    ccn.setProxyKey(proxy_key)
+    ccn.setPrimeQ(prime_q)
+    ccn.setNumberG("2")
+    
+    
+    
     
     
     server_key = k.getProxyKey(NR_USERS)
@@ -28,14 +47,16 @@ def encrypt_and_decrypt(list_components, k, keysize):
     prime_q = k.getPrimeQ()
     NR_USERS+=1
     
+    original_content = base64.b64encode("A"*20)
+    logging.debug("Content={0}".format(original_content))
+    
     for c in list_components:
-        content = "A"*2048
+        
     
         logging.debug("Component={0}".format(c))
-        logging.debug("Content={0}".format(content))
         
         start_time = time.time()
-        u = libprotector_interface.user_enc_w_keys(c, user_key, prime_q)
+        u = user.userTD(c)
         end_time = time.time()
         
         logging.debug("NameTD={0}".format(u))
@@ -43,44 +64,46 @@ def encrypt_and_decrypt(list_components, k, keysize):
         res[0] += end_time - start_time
         
         start_time = time.time()
-        t = libprotector_interface.ccn_re_enc_w_keys(u, len(u), server_key, prime_q)
+        t = ccn.CCNTD(u)
         end_time = time.time()
         
         res[1] += end_time - start_time
         
         logging.debug("CCN-NameTD={0}".format(t))
         
-        start_time = time.time()
-        content = libprotector_interface.user_enc_w_keys(content, user_key, prime_q)
-        end_time = time.time()
-        
-        res[2] += end_time - start_time
-        
-        logging.debug("ContentTD={0}".format(content))
-        
-        start_time = time.time()
-        content_mk = libprotector_interface.ccn_re_enc_w_keys(content, len(content), user_key, prime_q)
-        end_time = time.time()
-        
-        res[3] += end_time - start_time
-        
-        logging.debug("CCN-ContentTD={0}".format(content_mk))
-        
-        start_time = time.time()
-        t = str(libprotector_interface.ccn_pre_dec_w_keys(content_mk, server_key, prime_q))
-        end_time = time.time()
-        
-        res[4] += end_time - start_time
-        
-        logging.debug("CCN-Content-Dec={0}".format(t))
-        
-        start_time = time.time()
-        t = libprotector_interface.client_dec_w_keys(t, user_key, prime_q)
-        end_time = time.time()
-        
-        res[5] += end_time - start_time
-        
-        logging.debug("Content-Dec={0}".format(t))
+    start_time = time.time()
+    content = user.contentTD(original_content)
+    end_time = time.time()
+    
+    res[2] += end_time - start_time
+    
+    logging.debug("ContentTD={0}".format(content))
+    
+    start_time = time.time()
+    content_mk = ccn.CCNContentTD(content)
+    end_time = time.time()
+    
+    res[3] += end_time - start_time
+    
+    logging.debug("CCN-ContentTD={0}".format(content_mk))
+    
+    start_time = time.time()
+    t = ccn.CCNContentPreDec(content_mk)
+    end_time = time.time()
+    
+    res[4] += end_time - start_time
+    
+    logging.debug("CCN-Content-Dec={0}".format(t))
+    
+    start_time = time.time()
+    t = user.contentDec(t)
+    end_time = time.time()
+    
+    res[5] += end_time - start_time
+    
+    assert t == original_content
+    
+    logging.debug("Content-Dec={0}".format(t))
     
     return res
         
@@ -95,9 +118,9 @@ def main(filename, keysize, number_names, debug=False):
     res = []
     
     
+    k = KMS()
+    k.initKMS(keysize)
     for name in selected_names:
-        k = libprotector_interface.KMS()
-        k.initKMS(keysize)
         res.append(encrypt_and_decrypt(name, k, keysize))
     
     return numpy.average(res, axis=0), numpy.std(res, axis=0)
@@ -138,7 +161,7 @@ if __name__ == '__main__':
 
     r_a, r_s = main(options.trace_filename, options.keysize, options.number_names)
     
-    functions = ["user_enc", "ccn_re_enc", "cp_enc", "cp_re_enc", "ccn_pre_dec", "client_dec", "initKMS", "keygen"]
+    functions = ["nameTD", "CCN-Name-TD", "ContentTD", "CCN-ContentTD", "CCN-Content-Pre-Dec", "Content-Dec", "initKMS", "keygen"]
     
     for i in range(len(r_a)):
         print functions[i], r_a[i], r_s[i]    

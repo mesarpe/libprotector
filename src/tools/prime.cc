@@ -30,7 +30,7 @@ int main(void)
     BN_hex2bn(&primeQ, res_getPrimeQ);
     BN_hex2bn(&userKey, res_getUserK);
 
-    User *u = new User();
+    User *u = new User(1024);
 
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);

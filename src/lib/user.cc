@@ -8,8 +8,9 @@
 #include "user.h"
 #include "utils.h"
 
-User::User(void)
+User::User(unsigned int keysize)
 {
+    this->keysize = keysize;
     this->numberG = BN_new();
     BIGNUM * number1 = BN_new();
     BN_one(number1);
@@ -31,9 +32,9 @@ User::~User(void)
         BN_clear_free(this->primeQ);
 }
 
-void User::setUserKey(const BIGNUM * serverKey)
+void User::setUserKey(const BIGNUM * userKey)
 {
-    this->numberX_1 = BN_dup(serverKey);
+    this->numberX_1 = BN_dup(userKey);
 };
 
 void User::setNumberG(const BIGNUM * serverKey)
@@ -60,7 +61,7 @@ std::pair<BIGNUM *, BIGNUM *> User::UserTD(const unsigned char * component, unsi
     }
     /* Convert the user string into a number */
     BIGNUM * componentInBinary = BN_new();
-    if (size_component > 160)
+    if (size_component > 160) // TODO: FIX THIS LIMIT ACCORDING TO THE KEYSIZE, SHOW A WARNING MESSAGE!
         size_component = 160;
     componentInBinary = BN_bin2bn(component, size_component, componentInBinary);
 
@@ -140,8 +141,7 @@ std::pair<BIGNUM *, BIGNUM *> User::ContentProviderEnc(const unsigned char * com
         printf("Values not initialized\n");
         exit(-1);
     }
-	
-	unsigned int nr_bits = SECURITY_KEYSIZE;
+    
 	
     /* Convert the user string into a number */
     BIGNUM * componentInBinary = BN_new();
@@ -151,7 +151,7 @@ std::pair<BIGNUM *, BIGNUM *> User::ContentProviderEnc(const unsigned char * com
 	
 	// Calculate random r
 	BIGNUM * r = BN_new();
-    BN_rand(r, nr_bits, -1, 0);
+    BN_rand(r, this->keysize, -1, 0);
 	
 	// Calculate g^r
 	BIGNUM * t_1 = BN_new();
@@ -211,7 +211,7 @@ BIGNUM * User::UserDec(const std::pair<BIGNUM *, BIGNUM *> e)
 /* WRAPPER FOR C */
 extern "C" char * EncryptUserName(const char * original_content_name)
 {
-    User *u = new User();
+    User *u = new User(512); //TODO: change
 
     char * res_getUserK = retrieveKeyFromServer("userK:0");
     char * res_getPrimeQ = retrieveKeyFromServer("primeQ");
@@ -282,7 +282,7 @@ extern "C" char * EncryptUserName(const char * original_content_name)
 extern "C" char * EncryptUserContentNoNetwork(const unsigned char * original_content, const unsigned int content_len, const BIGNUM * primeQ, const BIGNUM * userKey)
 {
 	//std::pair<unsigned char *, unsigned int> hashed_component = encodeIntoBase64(original_content, content_len);
-	User *u = new User();
+	User *u = new User(512); // TODO: CHANGE
 
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);
@@ -314,7 +314,7 @@ extern "C" char * libprotector_EncryptUserContentWithKeys(const unsigned char * 
     BN_hex2bn(&primeQ, prime_q);
     BN_hex2bn(&userKey, user_key);
 
-    User *u = new User();
+    User *u = new User(512); // TODO: CHANGE
 
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);
@@ -366,7 +366,7 @@ extern "C" unsigned char * libprotector_ReDecryptContentWithKeys(const char * en
     BN_hex2bn(&primeQ, res_getPrimeQ);
     BN_hex2bn(&userKey, res_getUserK);
 
-    User *u = new User();
+    User *u = new User(512); // TODO: CHANGE
 
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);
@@ -426,7 +426,7 @@ extern "C" unsigned char * libprotector_ReDecryptAndSplitContent(const char * en
     BN_hex2bn(&primeQ, res_getPrimeQ);
     BN_hex2bn(&userKey, res_getUserK);
 
-    User *u = new User();
+    User *u = new User(512); // TODO: CHANGE
 
     u->setPrimeQ(primeQ);
     u->setUserKey(userKey);
@@ -482,3 +482,101 @@ extern "C" unsigned char * libprotector_ReDecryptAndSplitContent(const char * en
 	
 	return (unsigned char*) b64_message;
 }
+
+/* libprotector C interface */
+extern "C" User * libprotector_User_new(unsigned int keysize)
+{
+    return new User(keysize);
+}
+
+extern "C" void libprotector_User_setUserKey(User * u, const char * user_key)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, user_key);
+    reinterpret_cast<User *>(u)->setUserKey(aux);
+    BN_clear_free(aux);
+};
+
+extern "C" void libprotector_User_setNumberG(User * u, const char * number_g)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, number_g);
+    reinterpret_cast<User *>(u)->setNumberG(aux);
+    BN_clear_free(aux);
+};
+
+extern "C" void libprotector_User_setPrimeQ(User * u, const char * prime_q)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, prime_q);
+    reinterpret_cast<User *>(u)->setPrimeQ(aux);
+    BN_clear_free(aux);
+};
+
+extern "C" void libprotector_User_setSalt(User * u, const char * salt_key)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, salt_key);
+    reinterpret_cast<User *>(u)->setSalt(aux);
+    BN_clear_free(aux);
+};
+
+extern "C" void libprotector_User_UserTD(User * u, const unsigned char * component, unsigned int size_component, char *& p1, char *& p2)
+{
+    std::pair<BIGNUM *, BIGNUM *> t = reinterpret_cast<User *>(u)->UserTD(component, size_component);
+    unsigned int keysize = reinterpret_cast<User *>(u)->keysize;
+    p1 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(t.first);
+    memcpy((void *) (p1), (void *) aux_component, (keysize/4));
+    
+    p2 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component2 = BN_bn2hex(t.second);
+    memcpy((void *) (p2), (void *) aux_component2, (keysize/4));
+    
+    free(aux_component);
+    free(aux_component2);
+}
+
+extern "C" void libprotector_User_ContentTD(User * u, const unsigned char * block, const unsigned int block_size, char *& p1, char *& p2)
+{
+    std::pair<BIGNUM *, BIGNUM *> t = reinterpret_cast<User *>(u)->ContentProviderEnc(block, block_size);
+    
+    
+    unsigned int keysize = reinterpret_cast<User *>(u)->keysize;
+    p1 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(t.first);
+    memcpy((void *) (p1), (void *) aux_component, (keysize/4));
+    
+    p2 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component2 = BN_bn2hex(t.second);
+    memcpy((void *) (p2), (void *) aux_component2, (keysize/4));
+    
+    free(aux_component);
+    free(aux_component2);
+}
+
+extern "C" void libprotector_User_ClientDec(User * u, const char * component1, const char * component2, char *& p1)
+{
+    unsigned int keysize = reinterpret_cast<User *>(u)->keysize;
+    
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, component1);
+    
+    BIGNUM * aux2 = BN_new();
+    BN_hex2bn(&aux2, component2);
+    
+    std::pair<BIGNUM *, BIGNUM *> encrypted_payload = std::make_pair(aux, aux2);
+    
+    BIGNUM * decrypted_value = reinterpret_cast<User *>(u)->UserDec(encrypted_payload);
+    
+    p1 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(decrypted_value);
+    
+    BN_bn2bin(decrypted_value, (unsigned char *) p1);
+	
+    free(aux_component);
+}
+
+
+
+

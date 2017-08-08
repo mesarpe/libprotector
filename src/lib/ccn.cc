@@ -16,8 +16,9 @@
 
 #include <openssl/evp.h>
 
-CCN::CCN(void)
+CCN::CCN(unsigned int keysize)
 {
+    this->keysize = keysize;
 	this->numberG = BN_new();
     BIGNUM * number1 = BN_new();
     BN_one(number1);
@@ -258,7 +259,7 @@ std::pair<BIGNUM *, BIGNUM *> CCN::CCNPreDec(const std::pair<BIGNUM *, BIGNUM *>
 // Wrapper for C
 extern "C" char * ReEncryptUserTD(const char * user_trapdoor, const BIGNUM * primeQ,  const BIGNUM * serverKey)
 {
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); //TODO: CHANGE
     //printf("The router was created\n");
 
     router->setPrimeQ(primeQ);
@@ -286,7 +287,7 @@ extern "C" char * libprotector_SimpleReEncryptUserTD(const char * user_trapdoor)
     BN_hex2bn(&primeQ, res_getPrimeQ);
     BN_hex2bn(&serverKey, res_getServerK);
 
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); // TODO: change
     //printf("The router was created\n");
 
     router->setPrimeQ(primeQ);
@@ -321,7 +322,7 @@ extern "C" char * libprotector_SimpleReEncryptUserTD(const char * user_trapdoor)
 
 extern "C" char * libprotector_ReEncryptUserContentNoNetwork(const char * user_encr_content, const unsigned int user_encr_len, const BIGNUM * serverKey, const BIGNUM * router_primeQ)
 {
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); //TODO: CHANGE
 
     router->setPrimeQ(router_primeQ);
     router->setServerKey(serverKey);
@@ -397,7 +398,7 @@ extern "C" char * libprotector_ReEncryptUserContent(const char * user_encr_conte
     return res;
 
     /**
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); //TODO: CHANGE
 
     router->setPrimeQ(router_primeQ);
     router->setServerKey(serverKey);
@@ -452,7 +453,7 @@ extern "C" char * libprotector_ReEncryptAndSplitUserContent(const char * user_en
     BN_hex2bn(&router_primeQ, res_router_getPrimeQ);
     BN_hex2bn(&serverKey, res_getServerK);
 
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); //TODO: CHANGE
 
     router->setPrimeQ(router_primeQ);
     router->setServerKey(serverKey);
@@ -514,7 +515,7 @@ extern "C" char * libprotector_DecryptContentWithKeys(const char * reencrypted_c
     BN_hex2bn(&router_primeQ, res_router_getPrimeQ);
     BN_hex2bn(&serverKey, res_getServerK);
 
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); // TODO: CHANGE
 
     router->setPrimeQ(router_primeQ);
     router->setServerKey(serverKey);
@@ -587,7 +588,7 @@ extern "C" char * libprotector_DecryptAndSplitContent(const char * reencrypted_c
     BN_hex2bn(&router_primeQ, res_router_getPrimeQ);
     BN_hex2bn(&serverKey, res_getServerK);
 
-    CCN *router = new CCN();
+    CCN *router = new CCN(512); // TODO: CHANGE
 
     router->setPrimeQ(router_primeQ);
     router->setServerKey(serverKey);
@@ -640,3 +641,120 @@ extern "C" char * libprotector_DecryptAndSplitContent(const char * reencrypted_c
 	
 	return decrypted_content;
 }
+
+
+
+
+
+/* libprotector C interface */
+extern "C" CCN * libprotector_CCN_new(unsigned int keysize)
+{
+    return new CCN(keysize);
+}
+
+extern "C" void libprotector_CCN_setServerKey(CCN * c, const char * proxy_key)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, proxy_key);
+    reinterpret_cast<CCN *>(c)->setServerKey(aux);
+    BN_clear_free(aux);
+};
+
+extern "C" void libprotector_CCN_setNumberG(CCN * c, const char * number_g)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, number_g);
+    reinterpret_cast<CCN *>(c)->setNumberG(aux);
+    BN_clear_free(aux);
+};
+
+extern "C" void libprotector_CCN_setPrimeQ(CCN * c, const char * prime_q)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, prime_q);
+    reinterpret_cast<CCN *>(c)->setPrimeQ(aux);
+    BN_clear_free(aux);
+};
+
+/*extern "C" void libprotector_CCN_setSalt(CCN * c, const char * salt_key)
+{
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, salt_key);
+    reinterpret_cast<CCN *>(c)->setSalt(aux);
+    BN_clear_free(aux);
+};*/
+
+extern "C" void libprotector_CCN_CCNTD(CCN * c, const char * component1, const char * component2, char *& p1)
+{
+    unsigned int keysize = reinterpret_cast<CCN *>(c)->keysize;;
+    
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, component1);
+    
+    BIGNUM * aux2 = BN_new();
+    BN_hex2bn(&aux2, component2);
+    
+    std::pair<BIGNUM *, BIGNUM *> my_pair = std::make_pair(aux, aux2);
+    
+    BIGNUM * p = reinterpret_cast<CCN *>(c)->CCNTD(my_pair);
+    
+    p1 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(p);
+    memcpy((void *) (p1), (void *) aux_component, (keysize/4));
+    
+    
+    free(aux_component);
+}
+
+extern "C" void libprotector_CCN_CCNContentTD(CCN * c, const char * component1, const char * component2, char *& p1, char *& p2)
+{
+    unsigned int keysize = reinterpret_cast<CCN *>(c)->keysize;
+    
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, component1);
+    
+    BIGNUM * aux2 = BN_new();
+    BN_hex2bn(&aux2, component2);
+    
+    std::pair<BIGNUM *, BIGNUM *> encrypted_payload = std::make_pair(aux, aux2);
+    
+    std::pair<BIGNUM *, BIGNUM *> p = reinterpret_cast<CCN *>(c)->ContentProviderReEnc(encrypted_payload);
+    
+    p1 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(p.first);
+    memcpy((void *) (p1), (void *) aux_component, (keysize/4));
+    
+    p2 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component2 = BN_bn2hex(p.second);
+    memcpy((void *) (p2), (void *) aux_component2, (keysize/4));
+    
+    free(aux_component);
+    free(aux_component2);
+}
+
+extern "C" void libprotector_CCN_CCNContentPreDec(CCN * c, const char * component1, const char * component2, char *& p1, char *& p2)
+{
+    unsigned int keysize = reinterpret_cast<CCN *>(c)->keysize;
+    
+    BIGNUM * aux = BN_new();
+    BN_hex2bn(&aux, component1);
+    
+    BIGNUM * aux2 = BN_new();
+    BN_hex2bn(&aux2, component2);
+    
+    std::pair<BIGNUM *, BIGNUM *> encrypted_payload = std::make_pair(aux, aux2);
+    
+    std::pair<BIGNUM *, BIGNUM *> p = reinterpret_cast<CCN *>(c)->CCNPreDec(encrypted_payload);
+    
+    p1 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component = BN_bn2hex(p.first);
+    memcpy((void *) (p1), (void *) aux_component, (keysize/4));
+    
+    p2 = (char *) calloc(sizeof(char), ((keysize/4)) );
+    char * aux_component2 = BN_bn2hex(p.second);
+    memcpy((void *) (p2), (void *) aux_component2, (keysize/4));
+    
+    free(aux_component);
+    free(aux_component2);
+}
+
