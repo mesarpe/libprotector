@@ -12,7 +12,7 @@
 
 #include "user.h"
 
-#define SECURITY_KEYSIZE 2048
+#define SECURITY_KEYSIZE 1024
 
 #define HOST    "127.0.0.1"
 #define PORT_NUMBER 8992
@@ -27,7 +27,7 @@
 void error(const char *msg);
 std::pair<unsigned char*, unsigned int> hash_message(const char *mess1);
 std::pair<unsigned char*, unsigned int> encodeIntoBase64(const unsigned char * message, const unsigned int message_len);
-void printDEBUG(const BIGNUM var);
+//void printDEBUG(const BIGNUM var);
 std::vector<std::pair <unsigned char*, unsigned int> > Base64Splitter(const unsigned char * message, const unsigned int message_len, const unsigned int max_block_size);
 std::pair <unsigned char*, unsigned int> Base64Joiner(std::vector<std::pair <unsigned char*, unsigned int> > vec, unsigned int max_message_size);
 #endif

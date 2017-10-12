@@ -5,6 +5,7 @@ import numpy
 import optparse
 import random
 import time
+import logging
 
 from libprotector_interface import KMS, User, CCN
 
@@ -49,7 +50,10 @@ class Experiment(object):
             l.append(end_time-start_time)
             i+=1
         
-        return numpy.average(l)
+        if l == []:
+            return 0
+        else:
+            return numpy.average(l)
 
 
     def readInput(self, filename):
@@ -99,7 +103,9 @@ class Experiment(object):
         p = []
         for u in userset:
             for r in userset:
-                p.append(self.compareTwoNames(u, r))
+                res = self.compareTwoNames(u, r)
+                if res > 0:
+                    p.append(res)
         
         return numpy.average(p)
 
@@ -135,11 +141,23 @@ if __name__ == '__main__':
                       default=False,
                       action="store_true",
                       )
+    parser.add_option("-d", "--debug",
+                      dest="debug",
+                      default=False,
+                      action="store_true",
+                      help=""
+    )
     (options, args) = parser.parse_args()
+    
+    if options.debug:
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+    
     
     r = []
     e = Experiment(options.keysize)
     for i in range(0, options.repetitions):
+        logging.debug('Iteration {0}'.format(i))
         r.append(e.main(options.trace_filename, options.protector))
     
     if options.show_headers:

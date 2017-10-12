@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include <openssl/bn.h>
 #include <openssl/bio.h>
+//#include <openssl/bn.h>
 #include <string>
 #include <cstring>
 #include <utility>
@@ -19,21 +19,21 @@
 #include "user.h"
 
 /* Auxiliar functions*/
-void printDEBUG(const BIGNUM var)
-{
-    BIO * out = NULL;
-    out = BIO_new(BIO_s_file());
+//void printDEBUG(const BIGNUM var)
+//{
+//    BIO * out = NULL;
+//    out = BIO_new(BIO_s_file());
 
-    if (out == NULL)
-        exit(1);
+//    if (out == NULL)
+//        exit(1);
 	
-    BIO_set_fp(out,stdout,BIO_NOCLOSE);
-    BN_print(out, &var);
-    printf("\n");
+//    BIO_set_fp(out,stdout,BIO_NOCLOSE);
+//    BN_print(out, &var);
+//    printf("\n");
 
-    CRYPTO_mem_leaks(out);
-    BIO_free(out);
-}
+//    CRYPTO_mem_leaks(out);
+//    BIO_free(out);
+//}
 
 void error(const char *msg)
 {
