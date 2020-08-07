@@ -46,6 +46,24 @@ class User{
 #ifdef __cplusplus
 extern "C"
 #endif /* __cplusplus */
+User * libprotector_User_new(unsigned int keysize);
+
+#ifdef __cplusplus
+extern "C"
+#endif /* __cplusplus */
+{
+    void libprotector_User_setUserKey(User * u, const char * user_key);
+    void libprotector_User_setNumberG(User * u, const char * number_g);
+    void libprotector_User_setPrimeQ(User * u, const char * prime_q);
+    void libprotector_User_setSalt(User * u, const char * salt_key);
+    void libprotector_User_UserTD(User * u, const unsigned char * component, unsigned int size_component, char *& p1, char *& p2);
+    void libprotector_User_ContentTD(User * u, const unsigned char * block, const unsigned int block_size, char *& p1, char *& p2);
+    void libprotector_User_ClientDec(User * u, const char * component1, const char * component2, char *& p1);
+}
+
+#ifdef __cplusplus
+extern "C"
+#endif /* __cplusplus */
 char * EncryptUserName(const char * original_content_name);
 
 #ifdef __cplusplus
