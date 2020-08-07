@@ -291,7 +291,6 @@ TEST_CASE("Repeat all the steps to encrypt and decrypt content"){
         rebuild_vector.push_back(std::make_pair(example4, example4_size));
         rebuild_size += example4_size;
 
-        //free(example4);
         free(example3);
         free(example2);
         free(example1);
@@ -356,7 +355,6 @@ TEST_CASE("Repeat all the steps to encrypt and decrypt content"){
         rebuild_vector.push_back(std::make_pair(example4, example4_size));
         rebuild_size += example4_size;
 
-        free(example4);
         free(example3);
         free(example2);
         free(example1);
