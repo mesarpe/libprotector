@@ -1,0 +1,15 @@
+dist: xenial
+addons:
+  apt:
+    packages:
+    - g++
+    - cmake
+    - libboost-dev-all
+
+language: c++
+compiler: g++
+
+install:
+  - make
+script:
+  - ./kms-server & ./test_runner
