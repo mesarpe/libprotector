@@ -5,6 +5,7 @@ addons:
     - g++
     - cmake
     - libboost-all-dev
+    - libssl-dev
 
 language: c++
 compiler: g++
