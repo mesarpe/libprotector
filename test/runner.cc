@@ -94,13 +94,14 @@ TEST_CASE("T1: test base64: encode and decode Hello world"){
 
 TEST_CASE("T1: test base64: encode and decode A(63 times)"){
     unsigned int N = 23;
-    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * N);
+    unsigned char * message_to_send = (unsigned char *) malloc(sizeof(unsigned char) * (N+1));
     
     
     for(int i=0; i<N; i++)
     {
 	    message_to_send[i] = 'A';
-	}
+    }
+    message_to_send[N] = '\0';
 	
 	std::pair <unsigned char*, unsigned int> inb64text = encodeIntoBase64(message_to_send, N);
 	//printf("This is how the b64 looks like: %s %s\n", inb64text.first, "SE9MQQo=");
@@ -108,10 +109,13 @@ TEST_CASE("T1: test base64: encode and decode A(63 times)"){
 	// SE9MQQo=, result obtained with the bash command: echo "HOLA" | base64
 	//CHECK_EQ(inb64text.second, strlen("SGVsbG8gd29ybGQK"));
 	//CHECK_EQ(strcmp((char *)inb64text.first, "SGVsbG8gd29ybGQK"), 0);
-	
+
     unsigned char * decoded_base64_text = decodeFromBase64(inb64text.first, inb64text.second);
     
     free(inb64text.first);
+
+    CHECK_EQ(strlen((char *)decoded_base64_text), N);
+    CHECK_EQ(strlen((char *)message_to_send), N);
     
     CHECK_EQ(strcmp((char *)decoded_base64_text, (char *)message_to_send), 0);
     
@@ -287,7 +291,7 @@ TEST_CASE("Repeat all the steps to encrypt and decrypt content"){
         rebuild_vector.push_back(std::make_pair(example4, example4_size));
         rebuild_size += example4_size;
 
-        free(example4);
+        //free(example4);
         free(example3);
         free(example2);
         free(example1);
