@@ -16,4 +16,4 @@ install:
 before_script:
   - ./kms_server&
 script:
-  - ./test_runner
+  - sleep 10 && ./test_runner
