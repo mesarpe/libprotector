@@ -13,5 +13,7 @@ compiler: g++
 install:
   - cmake -DCMAKE_BUILD_TYPE=Debug .
   - make
+before_script:
+  - ./kms_server&
 script:
-  - ./kms_server && sleep 1 & ./test_runner
+  - ./test_runner
