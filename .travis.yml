@@ -11,7 +11,7 @@ language: c++
 compiler: g++
 
 install:
-  - cmake .
+  - cmake -DCMAKE_BUILD_TYPE=Debug .
   - make
 script:
   - ./kms-server & ./test_runner
