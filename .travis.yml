@@ -14,4 +14,4 @@ install:
   - cmake -DCMAKE_BUILD_TYPE=Debug .
   - make
 script:
-  - ./kms-server & ./test_runner
+  - ./kms_server && sleep 1 & ./test_runner
