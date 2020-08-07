@@ -4,7 +4,7 @@ addons:
     packages:
     - g++
     - cmake
-    - libboost-dev-all
+    - libboost-all-dev
 
 language: c++
 compiler: g++
