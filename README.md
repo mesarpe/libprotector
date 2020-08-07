@@ -1,4 +1,4 @@
-# libprotector
+# libprotector ![build passing](https://api.travis-ci.org/torokernel/torokernel.svg?branch=master)
 libprotector enables search on encrypted text
 
 Dependencies
