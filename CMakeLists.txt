@@ -9,7 +9,7 @@ SET(GCC_COVERAGE_LINK_FLAGS    "-lcrypto -lssl")
 
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}" )
-#find_library (CRYPTO_LIBRARY crypto)
+find_library (CRYPTO_LIBRARY crypto ssl)
 
 add_executable(prime src/tools/prime.cc src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc src/tools/prime.cc)
 add_executable(kms_server src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc src/tools/kms_server.cc)
@@ -22,6 +22,7 @@ target_link_libraries (prime crypto ssl)
 target_link_libraries (kms_server crypto ssl)
 target_link_libraries (kms_client crypto ssl)
 target_link_libraries (servicetime_encrypt crypto ssl)
+target_link_libraries (names crypto ssl)
 target_link_libraries (test_runner crypto ssl)
 
 add_library(protector SHARED src/lib/user.cc src/lib/kms.cc src/lib/ccn.cc src/lib/hashtable.cc src/lib/utils.cc)
